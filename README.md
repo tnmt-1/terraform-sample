@@ -1,18 +1,24 @@
 # terraform-hello-world
 
+以下構成の環境を構築する。
+
+![](https://d1tlzifd8jdoy4.cloudfront.net/wp-content/uploads/2023/01/20230127_simplebuild_07.png)
+
+引用: https://dev.classmethod.jp/articles/release-aws-simple-build-package/
+
 ## 環境
 
 - Windows 11 Home 22H2
 - WSL2
   - Ubuntu
-- AWS CLI インストール済み
-- AWS Credential 設定済み
+- AWS CLIインストール済み
+- AWS Credential設定済み
 
-## tfenv と terraform のインストール
+## tfenvとTerraformのインストール
 
-Terraform の複数のバージョン管理することができるツール。
+tfenvはTerraformの複数のバージョン管理することができるツールです。tfenvを使ってTerraformをインストールします。
 
-```
+```bash
 git clone https://github.com/tfutils/tfenv.git .tfenv
 cat << "_EOF_" >> .bashrc
 export PATH=$PATH:~/.tfenv/bin
@@ -27,39 +33,10 @@ tfenv use latest
 
 ### 変数定義
 
-`./terraform/terraform.tfvars`をプロジェクト用に設定する。
+`./terraform/terraform.tfvars`をプロジェクト用に設定します。
 
-### キーの作り方
-
-```
-# 既存のSSHキーが存在するか確認
-% ls -al ~/.ssh
-
-# 未使用の無駄なSSHキーがあれば削除しておく
-% rm -rf ~/.ssh/未使用のキー
-
-# RSA4096ビット形式のSSHキーを作成する
-% ssh-keygen -t rsa -b 4096
-
- ↓ 質問に答えていく
-# SSHキーの保存先パスとファイル名を決める
-#  -> そのままEnterと押すと()内のデフォルト値で生成される
-#    ※ 今回は「keypair_aws」としている
-Enter file in which to save the key (/Users/ユーザー名/.ssh/id_rsa): /Users/ユーザー名/.ssh/keypair_aws
-
-# SSHキーのパスフレーズ設定
-Enter passphrase (empty for no passphrase): 任意のパスワードを入力
-
-# パスフレーズの再確認
-Enter same passphrase again: 再度パスワードを入力
-
- ↓　入力が完了すると、秘密鍵と公開鍵が生成される
-
-Your identification has been saved in /Users/ユーザー名/.ssh/keypair_aws.
-Your public key has been saved in /Users/ユーザー名/.ssh/keypair_aws.pub.
-
-# 生成されたSSHキーの確認
-% ls -al ~/.ssh
+```bash
+cp terraform.tfvars.sample terraform.tfvars
 ```
 
 ## 初期化
@@ -68,8 +45,16 @@ Your public key has been saved in /Users/ユーザー名/.ssh/keypair_aws.pub.
 ワークスペースの初期化やプラグインがダウンロードされます。
 
 ```
-cd terraform
-terraform init
+terraform -chdir=terraform init
+```
+
+## チェック
+
+変更内容が表示されます。
+コードを作成、変更した場合は、terraform planすることで実行内容に問題ないかを確認します。
+
+```
+terraform -chdir=terraform plan
 ```
 
 ## リソースの構築
@@ -77,8 +62,18 @@ terraform init
 AWSにリソースを構築します。
 
 ```
-terraform apply
-    yesを入力してenter
+terraform -chdir=terraform apply
+※「yes」を入力してenter
+```
+
+以下のように質問が来るので、「yes」を入力してenterする
+
+```
+Do you want to perform these actions?
+  Terraform will perform the actions described above.
+  Only 'yes' will be accepted to approve.
+
+  Enter a value: yes
 ```
 
 ## リソースの破棄
@@ -86,14 +81,32 @@ terraform apply
 `terraform apply`で構築したリソースを破棄します。
 
 ```
-terraform destroy
-    yesを入力してenter
+terraform -chdir=terraform destroy
+```
+
+以下のように質問が来るので、「yes」を入力してenterする
+
+```
+Do you want to perform these actions?
+  Terraform will perform the actions described above.
+  Only 'yes' will be accepted to approve.
+
+  Enter a value: yes
 ```
 
 ## EC2
 
-EC2 Instance Connectを使う
-SSHはできない
+EC2 Instance Connectを使います。SSHはできません。
+
+## RDS
+
+EC2から接続可能です。外部からのアクセスはできません。
+接続パスワードは、パラメータストアに保存されています。
+
+メモ
+```
+mysql -u admin -p -h xxx.ap-northeast-1.rds.amazonaws.com -P 3306
+```
 
 ## 参考
 
@@ -101,4 +114,3 @@ SSHはできない
 - https://qiita.com/Shuhei_Nakada/items/68bb082c0e5085b22a16#-alb
 - https://qiita.com/ymd65536/items/327c05a8685d375a7e77
 - https://github.com/inayuky/terraform-sampler
-

@@ -1,0 +1,10 @@
+# プロジェクト名
+project = "terraform-hello-world"
+
+# RDSのエンジン
+rds_engine         = "mysql"
+rds_engine_verison = "8.0.34"
+
+# AWSアクセス認証情報
+aws_access_key_id     = ""
+aws_secret_access_key = ""
